@@ -1,1 +1,48 @@
+#include <DHT.h>
 
+#define DHTPIN 2        // ขา DATA ของ DHT11
+#define DHTTYPE DHT11
+
+#define FAN_PIN 8       // ขาที่ต่อพัดลม
+
+DHT dht(DHTPIN, DHTTYPE);
+
+float tempOn  = 20.0;   // อุณหภูมิที่เปิดพัดลม
+float tempOff = 19.0;   // อุณหภูมิที่ปิดพัดลม
+
+bool fanState = false;
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+
+  pinMode(FAN_PIN, OUTPUT);
+  digitalWrite(FAN_PIN, LOW); // เริ่มต้นปิดพัดลม
+}
+
+void loop() {
+  delay(2000); // DHT11 อ่านค่าได้ช้าหน่อย
+
+  float temp = dht.readTemperature(); // อ่านอุณหภูมิ °C
+
+  if (isnan(temp)) {
+    Serial.println("อ่านค่า DHT11 ไม่ได้");
+    return;
+  }
+
+  Serial.print("Temperature: ");
+  Serial.print(temp);
+  Serial.println(" °C");
+
+  // เงื่อนไขเปิด–ปิดพัดลม
+  if (temp >= tempOn && !fanState) {
+    digitalWrite(FAN_PIN, HIGH);
+    fanState = true;
+    Serial.println("Fan ON");
+  }
+  else if (temp <= tempOff && fanState) {
+    digitalWrite(FAN_PIN, LOW);
+    fanState = false;
+    Serial.println("Fan OFF");
+  }
+}
